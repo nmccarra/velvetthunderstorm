@@ -63,6 +63,12 @@ public class DynamoWeatherSensorRepository implements WeatherSensorRepository {
         return dynamoWeatherMeasurementEntity.getId();
     }
 
+    public void createTable() {
+        System.out.println("Creating table " + tableName);
+        DynamoDbTable<DynamoWeatherMeasurementEntity> table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(DynamoWeatherMeasurementEntity.class));
+        table.createTable();
+    }
+
     @Override
     public void clearAllMeasurements() {
         DynamoDbTable<DynamoWeatherMeasurementEntity> table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(DynamoWeatherMeasurementEntity.class));
