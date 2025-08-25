@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # DynamoDB Local
+  dynamodb:
+    image: amazon/dynamodb-local:1.21.0
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+        - app-network
+
+  # Spring Boot Application
+  spring-boot-app:
+    build:
+      context: .  # Path to your Spring Boot project directory
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080"  # Spring Boot app port
+    environment:
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+      - AWS_REGION=us-east-1
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
+    depends_on:
+      dynamodb:
+        condition: service_healthy
+
+networks:
+  app-network:
+    driver: bridge

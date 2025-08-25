@@ -1,0 +1,202 @@
+openapi: 3.0.3
+info:
+  title: Velvet Thunderstorm API
+  description: API for managing weather sensors and their measurements.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/
+    description: Local Development
+components:
+  schemas:
+    WeatherMeasurementRep:
+      type: object
+      description: A weather variable measurement representation for a sensor
+      properties:
+        measurementType:
+          $ref: '#/components/schemas/WeatherMeasurementTypeRep'
+        measurementValue:
+          type: number
+          format: float
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - measurementType
+        - measurementValue
+    WeatherSensorMetricsRep:
+      type: object
+      description: Metrics for a weather sensor
+      properties:
+        sensorId:
+          type: string
+        fromDateTime:
+          type: string
+          format: datetime
+        toDateTime:
+          type: string
+          format: datetime
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeatherMetricsRep'
+    WeatherMetricsRep:
+      type: object
+      description: Metrics for a specific weather measurement type
+      properties:
+        measurementType:
+          $ref: '#/components/schemas/WeatherMeasurementTypeRep'
+        min:
+          type: number
+          format: float
+        max:
+          type: number
+          format: float
+        average:
+          type: number
+          format: float
+        count:
+          type: integer
+          format: int32
+    WeatherMeasurementTypeRep:
+      type: string
+      description: Type of weather measurement
+      enum: [ TEMPERATURE, HUMIDITY, WIND_SPEED, AIR_PRESSURE, PRECIPITATION ]
+    WeatherSensorsMetricsRequest:
+      type: object
+      description: Request representation for multiple sensors metrics
+      properties:
+        sensorIds:
+          type: array
+          items:
+            type: string
+      required:
+        - sensorIds
+    ErrorRep:
+      type: object
+      description: Error response representation
+      properties:
+        status:
+          type: integer
+          format: int32
+        errors:
+          type: array
+          items:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+
+paths:
+  /v1/sensors/{sensorId}/weather-variable-measurement:
+    post:
+      summary: Submit a weather variable measurement for a sensor
+      tags: [ Sensor ]
+      operationId: addSensorWeatherVariableMeasurement
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeatherMeasurementRep'
+      responses:
+        '201':
+          description: Sensor measurement created successfully
+        '400':
+          description: Bad request, invalid input data
+        '500':
+          description: Internal server error
+  /v1/sensors/{sensorId}/metrics:
+    get:
+      summary: Get metrics for an individual weather sensor
+      tags: [ Sensor ]
+      operationId: getSensorMetrics
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fromDateTime
+          in: query
+          required: false
+          schema:
+            type: string
+            format: datetime
+        - name: toDateTime
+          in: query
+          required: false
+          schema:
+            type: string
+            format: datetime
+        - name: measurementTypes
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/WeatherMeasurementTypeRep'
+      responses:
+        '200':
+          description: Successful response returning sensor metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherSensorMetricsRep'
+        '400':
+          description: Bad request, invalid input data
+        '404':
+          description: Sensor metrics not found
+        '500':
+          description: Internal server error
+  /v1/sensors/metrics:
+    post:
+      summary: Get metrics for weather sensors specified
+      tags: [ Sensor ]
+      operationId: getSensorsMetrics
+      parameters:
+        - name: fromDateTime
+          in: query
+          required: false
+          schema:
+            type: string
+            format: datetime
+        - name: toDateTime
+          in: query
+          required: false
+          schema:
+            type: string
+            format: datetime
+        - name: measurementTypes
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/WeatherMeasurementTypeRep'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeatherSensorsMetricsRequest'
+      responses:
+        '200':
+          description: Successful response returning sensor metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherSensorMetricsRep'
+        '400':
+          description: Bad request, invalid input data
+        '500':
+          description: Internal server error
