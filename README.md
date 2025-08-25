@@ -14,10 +14,15 @@ This service manages the storage of weather measurements and provides APIs to re
 
 ### Run application
 
-#### Requirements
-* running **java 21**
+Running docker-compose will start the application along with a local DynamoDb database.
 
-`./gradlew bootRun`
+#### Requirements
+
+* Docker
+
+```shell
+  docker-compose up --build
+```
 
 ### Documentation
 The API documentation is available via [Swagger UI](http://localhost:8080/swagger-ui.html) after starting the application.

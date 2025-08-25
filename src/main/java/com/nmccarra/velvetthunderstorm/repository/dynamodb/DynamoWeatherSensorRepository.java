@@ -23,6 +23,8 @@ import java.util.List;
 @Primary
 public class DynamoWeatherSensorRepository implements WeatherSensorRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(DynamoWeatherSensorRepository.class);
+
     private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
     private final String tableName;
 
@@ -64,7 +66,7 @@ public class DynamoWeatherSensorRepository implements WeatherSensorRepository {
     }
 
     public void createTable() {
-        System.out.println("Creating table " + tableName);
+        logger.info("model=dynamo_weather_sensor_repository action=create_table table_name={}", tableName);
         DynamoDbTable<DynamoWeatherMeasurementEntity> table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(DynamoWeatherMeasurementEntity.class));
         table.createTable();
     }
